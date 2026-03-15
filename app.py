@@ -1011,7 +1011,7 @@ def scheduled_job():
 # =========================================================
 # FLASK ROUTES
 # =========================================================
-@app.route("/status", methods=["GET"])
+@app.route("/btc_15m/status", methods=["GET"])
 def status():
     open_trade = read_open_trade()
     state = read_processing_state()
@@ -1027,7 +1027,7 @@ def status():
         "training_end_from_meta": to_iso_ts(get_training_end_timestamp_from_meta())
     })
 
-@app.route("/predict", methods=["GET"])
+@app.route("/btc_15m/predict", methods=["GET"])
 def predict_now():
     try:
         result = run_inference()
@@ -1035,21 +1035,21 @@ def predict_now():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route("/latest-signal", methods=["GET"])
+@app.route("/btc_15m/latest-signal", methods=["GET"])
 def latest_signal():
     payload = read_latest_signal()
     if payload is None:
         return jsonify({"status": "empty", "message": "No signal yet"})
     return jsonify(payload)
 
-@app.route("/open-trade", methods=["GET"])
+@app.route("/btc_15m/open-trade", methods=["GET"])
 def get_open_trade():
     payload = read_open_trade()
     if payload is None:
         return jsonify({"status": "empty", "message": "No open trade"})
     return jsonify({"status": "ok", "trade": payload})
 
-@app.route("/trades", methods=["GET"])
+@app.route("/btc_15m/trades", methods=["GET"])
 def get_trades():
     if not os.path.exists(LIVE_TRADES_CSV_PATH):
         return jsonify({"status": "empty", "message": "No trades logged yet", "rows": []})
@@ -1061,7 +1061,7 @@ def get_trades():
         "rows": df.tail(200).fillna("").to_dict(orient="records")
     })
 
-@app.route("/signals", methods=["GET"])
+@app.route("/btc_15m/signals", methods=["GET"])
 def get_signals():
     if not os.path.exists(LIVE_SIGNALS_CSV_PATH):
         return jsonify({"status": "empty", "message": "No signals logged yet", "rows": []})
@@ -1073,7 +1073,7 @@ def get_signals():
         "rows": df.tail(200).fillna("").to_dict(orient="records")
     })
 
-@app.route("/rebuild-history", methods=["POST", "GET"])
+@app.route("/btc_15m/rebuild-history", methods=["POST", "GET"])
 def rebuild_history():
     try:
         with lock:

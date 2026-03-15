@@ -13,9 +13,9 @@ from sklearn.metrics import classification_report, confusion_matrix, roc_auc_sco
 # =========================================================
 TRAIN_CSV_PATH = "bitcoin_train.csv"
 
-MODEL_OUTPUT_PATH = "xgb_divergence_model.pkl"
-META_OUTPUT_PATH = "xgb_divergence_model_meta.json"
-SIGNALS_OUTPUT_PATH = "xgb_divergence_training_signals.csv"
+MODEL_OUTPUT_PATH = "../../xgb_divergence_model.pkl"
+META_OUTPUT_PATH = "../../xgb_divergence_model_meta.json"
+SIGNALS_OUTPUT_PATH = "../../xgb_divergence_training_signals.csv"
 
 INITIAL_CAPITAL = 10000.0
 LOT_SIZE = 0.05
