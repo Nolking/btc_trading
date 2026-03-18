@@ -10,8 +10,8 @@ import pandas as pd
 # =========================================================
 TEST_CSV_PATH = "bitcoin_test.csv"
 
-MODEL_PATH = "../../xgb_divergence_model.pkl"
-META_PATH = "../../xgb_divergence_model_meta.json"
+MODEL_PATH = "xgb_divergence_model.pkl"
+META_PATH = "xgb_divergence_model_meta.json"
 
 TRADES_OUTPUT_PATH = "xgb_backtest_divergence_trades.csv"
 SIGNALS_OUTPUT_PATH = "xgb_backtest_divergence_signals.csv"
