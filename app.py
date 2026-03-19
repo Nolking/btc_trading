@@ -4,7 +4,7 @@ import uuid
 import time
 import threading
 from typing import Optional, Dict, Any, Tuple
-
+from pathlib import Path
 import joblib
 import requests
 import numpy as np
@@ -16,27 +16,32 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 # =========================================================
 # CONFIG
-# =========================================================
+BASE_DIR = Path(__file__).resolve().parent
+
 SYMBOL = "BTCUSDT"
 INTERVAL = "15m"
 BINANCE_KLINES_URL = "https://api.binance.com/api/v3/klines"
 
 MODEL_TYPE = "xgb"   # "rf" or "xgb"
 
+MODELS_DIR = BASE_DIR / "models"
+DATA_DIR = BASE_DIR / "data"
+LOGS_DIR = BASE_DIR / "logs"
+
 if MODEL_TYPE == "rf":
-    MODEL_PATH = "models/rf_divergence_model.pkl"
-    META_PATH = "models/rf_divergence_model_meta.json"
+    MODEL_PATH = MODELS_DIR / "rf_divergence_model.pkl"
+    META_PATH = MODELS_DIR / "rf_divergence_model_meta.json"
 else:
-    MODEL_PATH = "models/xgb_divergence_model.pkl"
-    META_PATH = "models/xgb_divergence_model_meta.json"
+    MODEL_PATH = MODELS_DIR / "xgb_divergence_model.pkl"
+    META_PATH = MODELS_DIR / "xgb_divergence_model_meta.json"
 
-LIVE_CSV_PATH = "data/btcusdt_15m_live.csv"
+LIVE_CSV_PATH = DATA_DIR / "btcusdt_15m_live.csv"
 
-LATEST_SIGNAL_PATH = "logs/latest_signal.json"
-LIVE_SIGNALS_CSV_PATH = "logs/live_signals.csv"
-LIVE_TRADES_CSV_PATH = "logs/live_trades.csv"
-OPEN_TRADE_PATH = "logs/open_trade.json"
-PROCESSING_STATE_PATH = "logs/processing_state.json"
+LATEST_SIGNAL_PATH = LOGS_DIR / "latest_signal.json"
+LIVE_SIGNALS_CSV_PATH = LOGS_DIR / "live_signals.csv"
+LIVE_TRADES_CSV_PATH = LOGS_DIR / "live_trades.csv"
+OPEN_TRADE_PATH = LOGS_DIR / "open_trade.json"
+PROCESSING_STATE_PATH = LOGS_DIR / "processing_state.json"
 
 FETCH_LIMIT = 1000
 
