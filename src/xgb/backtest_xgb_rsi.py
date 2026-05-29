@@ -265,12 +265,11 @@ def run_backtest(df: pd.DataFrame, model=None, feature_columns=None):
             )
 
             if stop_hit or opposite_hit:
-                exit_reason = "stop_loss" if stop_hit else "opposite_divergence"
+                exit_reason = "stop_loss" if stop_hit else "reversal"
                 equity += running_pnl
 
                 trades.append({
-                    "entry_time": open_trade["entry_time"],
-                    "exit_time": timestamp,
+                    "entry_exit_time": f"Entry: {open_trade['entry_time']}\nExit: {timestamp}",
                     "side": side,
                     "entry_price": entry_price,
                     "exit_price": close_i,
@@ -365,8 +364,7 @@ def run_backtest(df: pd.DataFrame, model=None, feature_columns=None):
         equity += realized_pnl
 
         trades.append({
-            "entry_time": open_trade["entry_time"],
-            "exit_time": final_row["timestamp"],
+            "entry_exit_time": f"Entry: {open_trade['entry_time']}\nExit: {final_row["timestamp"]}",
             "side": open_trade["side"],
             "entry_price": open_trade["entry_price"],
             "exit_price": final_price,
@@ -380,6 +378,12 @@ def run_backtest(df: pd.DataFrame, model=None, feature_columns=None):
 
     trades_df = pd.DataFrame(trades)
     equity_curve_df = pd.DataFrame(equity_curve)
+    if len(trades_df):
+        winning_trades = trades_df.loc[trades_df["pnl_usd"] > 0, "pnl_usd"]
+        losing_trades = trades_df.loc[trades_df["pnl_usd"] <= 0, "pnl_usd"]
+    else:
+        winning_trades = pd.Series(dtype=float)
+        losing_trades = pd.Series(dtype=float)
 
     summary = {
         "initial_capital": INITIAL_CAPITAL,
@@ -388,9 +392,13 @@ def run_backtest(df: pd.DataFrame, model=None, feature_columns=None):
         "max_allowed_loss_pct": MAX_TOTAL_LOSS_PCT,
         "lockout_equity_level": lockout_equity,
         "num_trades": int(len(trades_df)),
-        "wins": int((trades_df["pnl_usd"] > 0).sum()) if len(trades_df) else 0,
-        "losses": int((trades_df["pnl_usd"] <= 0).sum()) if len(trades_df) else 0,
+        "wins": int(len(winning_trades)),
+        "losses": int(len(losing_trades)),
         "win_rate": float((trades_df["pnl_usd"] > 0).mean()) if len(trades_df) else 0.0,
+        "average_win": float(winning_trades.mean()) if len(winning_trades) else 0.0,
+        "average_loss": float(losing_trades.mean()) if len(losing_trades) else 0.0,
+        "highest_win": float(winning_trades.max()) if len(winning_trades) else 0.0,
+        "lowest_win": float(winning_trades.min()) if len(winning_trades) else 0.0,
     }
 
     return trades_df, equity_curve_df, summary
