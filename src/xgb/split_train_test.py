@@ -4,7 +4,7 @@ import numpy as np
 # =========================================================
 # CONFIG
 # =========================================================
-INPUT_CSV_PATH = "bitcoin_all.csv"
+INPUT_CSV_PATH = "BTCUSDT_15m_1825d.csv"
 
 TRAIN_OUTPUT_PATH = "bitcoin_train.csv"
 TEST_OUTPUT_PATH = "bitcoin_test.csv"

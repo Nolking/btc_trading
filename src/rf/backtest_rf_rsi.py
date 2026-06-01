@@ -380,6 +380,13 @@ def run_backtest(df: pd.DataFrame, model=None, feature_columns=None):
     trades_df = pd.DataFrame(trades)
     equity_curve_df = pd.DataFrame(equity_curve)
 
+    if len(trades_df):
+        winning_trades = trades_df.loc[trades_df["pnl_usd"] > 0, "pnl_usd"]
+        losing_trades = trades_df.loc[trades_df["pnl_usd"] <= 0, "pnl_usd"]
+    else:
+        winning_trades = pd.Series(dtype=float)
+        losing_trades = pd.Series(dtype=float)
+
     summary = {
         "initial_capital": INITIAL_CAPITAL,
         "final_equity": equity,
@@ -387,9 +394,13 @@ def run_backtest(df: pd.DataFrame, model=None, feature_columns=None):
         "max_allowed_loss_pct": MAX_TOTAL_LOSS_PCT,
         "lockout_equity_level": lockout_equity,
         "num_trades": int(len(trades_df)),
-        "wins": int((trades_df["pnl_usd"] > 0).sum()) if len(trades_df) else 0,
-        "losses": int((trades_df["pnl_usd"] <= 0).sum()) if len(trades_df) else 0,
-        "win_rate": float((trades_df["pnl_usd"] > 0).mean()) if len(trades_df) else 0.0,
+        "wins": int(len(winning_trades)),
+        "losses": int(len(losing_trades)),
+        "win_rate": float(len(winning_trades) / len(trades_df)) if len(trades_df) else 0.0,
+        "average_win": float(winning_trades.mean()) if len(winning_trades) else 0.0,
+        "average_loss": float(losing_trades.mean()) if len(losing_trades) else 0.0,
+        "highest_win": float(winning_trades.max()) if len(winning_trades) else 0.0,
+        "lowest_win": float(winning_trades.min()) if len(winning_trades) else 0.0,
     }
 
     return trades_df, equity_curve_df, summary
