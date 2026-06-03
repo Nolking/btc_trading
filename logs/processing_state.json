@@ -1,0 +1,19 @@
+{
+  "initialized": true,
+  "backfill_completed": true,
+  "last_processed_timestamp": "2026-06-03T13:45:00",
+  "last_signal_timestamp": "2026-06-02T22:45:00",
+  "last_backfill_timestamp": "2026-03-19T06:00:00",
+  "last_retry_info": {
+    "fresh_data_found": true,
+    "expected_latest_closed_candle": "2026-06-03T13:45:00",
+    "attempts": [
+      {
+        "attempt": 1,
+        "status": "ok",
+        "expected_latest_closed_candle": "2026-06-03T13:45:00",
+        "latest_available": "2026-06-03T13:45:00"
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "train_csv_path": "bitcoin_train.csv",
+  "model_type": "RandomForestClassifier",
+  "rsi_period": 30,
+  "initial_capital": 10000.0,
+  "reference_equity_for_labeling": 10000.0,
+  "lot_size": 0.05,
+  "stop_loss_pct_of_equity": 0.01,
+  "feature_columns": [
+    "close",
+    "rsi",
+    "ret_1",
+    "ret_3",
+    "ret_5",
+    "rsi_change_1",
+    "rsi_change_3",
+    "rsi_change_5",
+    "rsi_mean_5",
+    "rsi_mean_10",
+    "rsi_std_5",
+    "rsi_std_10",
+    "rsi_distance_30",
+    "rsi_distance_70",
+    "price_range_pct",
+    "div_price_change",
+    "div_rsi_change",
+    "div_bars_gap",
+    "signal_side"
+  ],
+  "pivot_left": 3,
+  "pivot_right": 3
+}

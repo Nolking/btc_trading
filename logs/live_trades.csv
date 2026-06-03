@@ -1,0 +1,10 @@
+trade_id,symbol,interval,entry_time,entry_side,entry_price,entry_probability,entry_prediction,entry_signal_type,stop_loss_usd,status,exit_time,exit_price,exit_reason,pnl_usd,bars_held,source
+ddaa3502-9e5a-4a7f-bc26-d74932b4d301,BTCUSDT,15m,2026-03-09T04:15:00,short,67575.86,0.5617040991783142,1,bearish_divergence,100.0,closed,2026-03-10T02:30:00,70320.17,stop_loss,-137.21549999999988,89,retroactive
+d112de33-f6c5-4db6-8e0b-4480c214cb5d,BTCUSDT,15m,2026-03-11T05:45:00,long,69510.36,0.5293232202529907,1,bullish_divergence,100.0,closed,2026-03-12T19:45:00,70432.32,opposite_divergence,46.098000000000326,152,retroactive
+ff6a1d5d-d37f-4015-93f4-9222b78ca155,BTCUSDT,15m,2026-03-15T20:30:00,short,71846.68,0.7623468041419983,1,bearish_divergence,100.0,closed,2026-03-16T05:00:00,73866.52,stop_loss,-100.99200000000056,34,retroactive
+6e7edbd1-a936-4e3b-9016-865ef61578a9,BTCUSDT,15m,2026-03-19T15:30:00,long,68900.01,0.5837554335594177,1,bullish_divergence,100.0,closed,2026-03-23T14:00:00,71524.82,opposite_divergence,131.24050000000062,378,live
+132ec950-4842-40b1-9322-9165bae5ffc6,BTCUSDT,15m,2026-03-23T14:00:00,short,71524.82,0.6110959053039551,1,bearish_divergence,100.0,closed,2026-03-25T17:45:00,70779.0,opposite_divergence,37.29100000000035,207,live
+ee0155e1-54fe-46e8-80af-0a9c8c79b591,BTCUSDT,15m,2026-03-25T17:45:00,long,70779.0,0.5524664521217346,1,bullish_divergence,100.0,closed,2026-03-26T17:45:00,68486.86,stop_loss,-114.60699999999996,96,live
+66bc0e37-7c1c-48d2-be84-a5674479d30a,BTCUSDT,15m,2026-05-24T06:45:00,short,76987.58,0.5063561797142029,1,bearish_divergence,100.0,closed,2026-05-26T03:00:00,76565.73,opposite_divergence,21.09250000000029,177,live
+3fe83c98-b257-47e7-9205-bc540fa7537e,BTCUSDT,15m,2026-05-29T09:15:00,short,73887.03,0.5205132961273193,1,bearish_divergence,100.0,closed,2026-06-02T19:30:00,66925.61,opposite_divergence,348.0709999999999,425,live
+09c2b53c-5c21-473e-917e-0a5ca14f0927,BTCUSDT,15m,2026-06-02T19:30:00,long,66925.61,0.5573359727859497,1,bullish_divergence,100.0,open,,,,,0,live

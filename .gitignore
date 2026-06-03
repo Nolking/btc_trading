@@ -3,6 +3,6 @@ venv/
 __pycache__/
 *.pyc
 
-data
-logs
-models
+# data
+# logs
+# models

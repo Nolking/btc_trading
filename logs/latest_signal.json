@@ -1,0 +1,17 @@
+{
+  "status": "ok",
+  "timestamp": "2026-06-02T22:45:00",
+  "symbol": "BTCUSDT",
+  "interval": "15m",
+  "side": "long",
+  "close": 66385.2,
+  "rsi": 34.319077425446,
+  "probability_profitable": 0.6114504337310791,
+  "prediction": 1,
+  "bullish_divergence": true,
+  "bearish_divergence": false,
+  "div_price_change": -0.008074786318720195,
+  "div_rsi_change": 4.583321469052862,
+  "div_bars_gap": 13.0,
+  "trade_action": "signal_logged_trade_already_open"
+}
