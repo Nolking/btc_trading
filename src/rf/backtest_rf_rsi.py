@@ -208,6 +208,22 @@ def estimate_reversal_probability(row: pd.Series, model, feature_columns: list):
     except Exception:
         return None
 
+def add_model_probability_columns(df: pd.DataFrame, model, feature_columns: list) -> pd.DataFrame:
+   
+    df = df.copy()
+    df["model_probability"] = np.nan
+    # df["probability_threshold"] = PROBABILITY_THRESHOLD
+    df["probability_passed"] = False
+
+    signal_mask = df["bullish_divergence"] | df["bearish_divergence"]
+
+    for idx in df.index[signal_mask]:
+        prob = estimate_reversal_probability(df.loc[idx], model, feature_columns) if USE_MODEL else None
+        if prob is not None:
+            df.loc[idx, "model_probability"] = prob
+            # df.loc[idx, "probability_passed"] = bool(prob >= PROBABILITY_THRESHOLD)
+
+    return df
 
 def calc_pnl(side: str, entry_price: float, exit_price: float, lot_size: float = LOT_SIZE) -> float:
     if side == "long":
@@ -421,7 +437,7 @@ if __name__ == "__main__":
         print("Warning: model/meta not found. Backtest will use divergence logic only.")
 
     trades_df, equity_curve_df, summary = run_backtest(df, model=model, feature_columns=feature_columns)
-
+    df = add_model_probability_columns(df, model, feature_columns)
     df.to_csv(SIGNALS_OUTPUT_PATH, index=False)
     trades_df.to_csv(TRADES_OUTPUT_PATH, index=False)
     equity_curve_df.to_csv(EQUITY_OUTPUT_PATH, index=False)
