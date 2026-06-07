@@ -53,6 +53,11 @@ STOP_LOSS_PCT_OF_EQUITY = 0.01   # 1% of 10000 = 100 USD
 PROBABILITY_THRESHOLD = 0.50
 REQUIRE_MODEL_CLASS_1 = True
 
+# Divergence pivots are confirmed only after the right-side candles exist.
+# The value is fixed here because pivot_left / pivot_right are loaded from model metadata later.
+# With pivot_right=3, rechecking 8 bars is enough to catch newly confirmed older signals.
+SIGNAL_RECHECK_BARS = 8
+
 # retry behavior when a fresh 15m candle is not yet available
 FETCH_RETRY_COUNT = 3
 FETCH_RETRY_DELAY_SECONDS = 15
@@ -847,6 +852,14 @@ def build_no_signal_result(message: str, timestamp_value=None, extra: Optional[d
     return out
 
 def process_new_rows_live(df: pd.DataFrame, retry_info: Optional[dict] = None) -> dict:
+    """
+    Process new closed candles for trade exits, then recheck a recent window for
+    divergence signals that may only become confirmed after PIVOT_RIGHT candles.
+
+    This fixes the scheduler bug where a divergence detected on candle T is
+    confirmed only after later candles exist, but candle T is already older than
+    last_processed_timestamp and would otherwise be skipped.
+    """
     state = read_processing_state()
     open_trade = read_open_trade()
 
@@ -860,22 +873,18 @@ def process_new_rows_live(df: pd.DataFrame, retry_info: Optional[dict] = None) -
 
     if last_processed_ts is None:
         new_rows = df.copy()
+        signal_rows = df.copy()
     else:
+        # Only genuinely new candles are used to advance trade exits and state.
         new_rows = df.loc[df["timestamp"] > last_processed_ts].copy()
 
-    if new_rows.empty:
-        last_sig = read_latest_signal()
-        if last_sig is not None:
-            if retry_info is not None:
-                last_sig["retry_info"] = retry_info
-            return last_sig
-
-        result = build_no_signal_result("No new closed candle to process", latest_ts, extra={"retry_info": retry_info})
-        save_latest_signal(result)
-        return result
+        # Signals must be rechecked because pivot/divergence confirmation lags.
+        recheck_start_ts = last_processed_ts - pd.Timedelta(minutes=15 * SIGNAL_RECHECK_BARS)
+        signal_rows = df.loc[df["timestamp"] > recheck_start_ts].copy()
 
     latest_result = None
 
+    # 1) Process only new candles for existing trade exits and state advancement.
     for _, row in new_rows.iterrows():
         if open_trade is not None:
             exit_payload = maybe_close_trade(open_trade, row)
@@ -889,50 +898,74 @@ def process_new_rows_live(df: pd.DataFrame, retry_info: Optional[dict] = None) -
                 }
                 open_trade = None
 
-        has_signal = bool(row["bullish_divergence"]) or bool(row["bearish_divergence"])
-        if has_signal:
-            signal_ts = to_iso_ts(row["timestamp"])
-            last_signal_ts = state.get("last_signal_timestamp")
-
-            if signal_ts != last_signal_ts:
-                prob, pred = estimate_signal_probability(row)
-
-                if open_trade is None and should_enter_trade(prob, pred):
-                    new_trade = create_open_trade_from_row(row, prob, pred, source="live")
-                    append_trade_entry_once(new_trade)
-                    save_open_trade(new_trade)
-                    log_detected_signal_once(row, prob, pred, "trade_opened")
-                    latest_result = {
-                        "status": "ok",
-                        "message": "New trade opened",
-                        "event": "trade_opened",
-                        "trade": new_trade,
-                        "retry_info": retry_info
-                    }
-                    open_trade = new_trade
-                else:
-                    action = "signal_logged_trade_already_open" if open_trade is not None else "signal_logged_no_trade"
-                    log_detected_signal_once(row, prob, pred, action)
-                    latest_result = {
-                        "status": "ok",
-                        "message": "Signal processed",
-                        "event": action,
-                        "timestamp": signal_ts,
-                        "retry_info": retry_info
-                    }
-
-                state["last_signal_timestamp"] = signal_ts
-
         state["last_processed_timestamp"] = to_iso_ts(row["timestamp"])
+
+    # 2) Recheck recent candles for newly confirmed divergence signals.
+    #    Do not rely only on last_signal_timestamp because multiple recent
+    #    signals can exist inside the recheck window.
+    for _, row in signal_rows.iterrows():
+        has_signal = bool(row["bullish_divergence"]) or bool(row["bearish_divergence"])
+        if not has_signal:
+            continue
+
+        signal_ts = to_iso_ts(row["timestamp"])
+
+        # Prevent duplicate signal/trade processing when the same recent window
+        # is scanned on every scheduled run.
+        if signal_exists(signal_ts):
+            continue
+
+        prob, pred = estimate_signal_probability(row)
+
+        if open_trade is None and should_enter_trade(prob, pred):
+            new_trade = create_open_trade_from_row(row, prob, pred, source="live")
+            append_trade_entry_once(new_trade)
+            save_open_trade(new_trade)
+            log_detected_signal_once(row, prob, pred, "trade_opened")
+
+            latest_result = {
+                "status": "ok",
+                "message": "New trade opened",
+                "event": "trade_opened",
+                "trade": new_trade,
+                "retry_info": retry_info
+            }
+            open_trade = new_trade
+        else:
+            action = "signal_logged_trade_already_open" if open_trade is not None else "signal_logged_no_trade"
+            log_detected_signal_once(row, prob, pred, action)
+
+            latest_result = {
+                "status": "ok",
+                "message": "Signal processed",
+                "event": action,
+                "timestamp": signal_ts,
+                "retry_info": retry_info
+            }
+
+        state["last_signal_timestamp"] = signal_ts
 
     save_processing_state(state)
 
     if latest_result is None:
-        latest_result = build_no_signal_result(
-            "New closed candles processed. No trade action.",
-            latest_ts,
-            extra={"retry_info": retry_info}
-        )
+        if new_rows.empty:
+            last_sig = read_latest_signal()
+            if last_sig is not None:
+                if retry_info is not None:
+                    last_sig["retry_info"] = retry_info
+                return last_sig
+
+            latest_result = build_no_signal_result(
+                "No new closed candle to process",
+                latest_ts,
+                extra={"retry_info": retry_info}
+            )
+        else:
+            latest_result = build_no_signal_result(
+                "New closed candles processed. No trade action.",
+                latest_ts,
+                extra={"retry_info": retry_info}
+            )
 
     if "signal" not in latest_result and "trade" not in latest_result and latest_result.get("event") is None:
         save_latest_signal(latest_result)
