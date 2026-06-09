@@ -213,7 +213,7 @@ def add_model_probability_columns(df: pd.DataFrame, model, feature_columns: list
     df = df.copy()
     df["model_probability"] = np.nan
     # df["probability_threshold"] = PROBABILITY_THRESHOLD
-    df["probability_passed"] = False
+    # df["probability_passed"] = False
 
     signal_mask = df["bullish_divergence"] | df["bearish_divergence"]
 
@@ -222,7 +222,6 @@ def add_model_probability_columns(df: pd.DataFrame, model, feature_columns: list
         if prob is not None:
             df.loc[idx, "model_probability"] = prob
             # df.loc[idx, "probability_passed"] = bool(prob >= PROBABILITY_THRESHOLD)
-
     return df
 
 def calc_pnl(side: str, entry_price: float, exit_price: float, lot_size: float = LOT_SIZE) -> float:
